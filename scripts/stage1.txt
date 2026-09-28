@@ -1,0 +1,9 @@
+# Stage 1: REPL commands
+ls
+cd home
+cd student
+pwd
+ls
+unknown_command
+ls one two
+history
