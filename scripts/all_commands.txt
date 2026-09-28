@@ -1,0 +1,15 @@
+# Stage 1-5 integration script
+pwd
+ls
+cd home/student
+ls
+cat hello.txt
+pwd
+history
+vfs-info
+mv hello.txt renamed.txt
+ls
+cat renamed.txt
+mv renamed.txt /home
+ls /home
+vfs-info

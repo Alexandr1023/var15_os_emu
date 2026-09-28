@@ -1,0 +1,7 @@
+# mv scenarios
+pwd
+ls /home/student
+mv /home/student/profile.txt /home/student/profile-renamed.txt
+ls /home/student
+mv /home/student/profile-renamed.txt /var
+ls /var

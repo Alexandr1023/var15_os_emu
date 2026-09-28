@@ -59,6 +59,32 @@ class Shell:
         names = []
         while node is not self.vfs.root: names.append(node.name); node = node.parent
         return "/" + "/".join(reversed(names))
+    def run_script(self, path):
+        try:
+            for line in open(path, encoding="utf-8"):
+                line = line.rstrip("\n")
+                if not line.strip() or line.lstrip().startswith("#"): continue
+                print(f"$ {line}")
+                if not self.execute(line): break
+        except OSError as exc: print(f"ошибка сценария: {exc}")
+    def _move(self, source, destination):
+        try: target = self.vfs.resolve(destination, self.cwd)
+        except VfsError:
+            parent_path, _, name = destination.rpartition("/")
+            if not name or name in {".", ".."}: raise VfsError("некорректное имя назначения")
+            parent = self.vfs.resolve(parent_path or ".", self.cwd)
+            if not parent.is_dir: raise VfsError("родитель назначения не является каталогом")
+            if name in parent.children: raise VfsError("объект назначения уже существует")
+            if source.parent is None: raise VfsError("нельзя переместить корень VFS")
+            del source.parent.children[source.name]; source.name = name; source.parent = parent; parent.children[name] = source; return
+        if not target.is_dir: raise VfsError("объект назначения уже существует")
+        ancestor = target
+        while ancestor is not None:
+            if ancestor is source: raise VfsError("нельзя переместить каталог внутрь самого себя")
+            ancestor = ancestor.parent
+        if source.name in target.children: raise VfsError("в каталоге назначения уже есть объект с таким именем")
+        if source.parent is None: raise VfsError("нельзя переместить корень VFS")
+        del source.parent.children[source.name]; source.parent = target; target.children[source.name] = source
     def execute(self, line):
         try: args = shlex.split(line)
         except ValueError as exc: print(f"ошибка разбора: {exc}"); return True
@@ -88,6 +114,11 @@ class Shell:
         if args[0] == "history":
             for number, command in enumerate(self.history, 1): print(f"{number:4}  {command}")
             return True
+        if args[0] == "mv":
+            if len(args) != 3: print("ошибка: использование: mv <источник> <назначение>"); return True
+            try: self._move(self.vfs.resolve(args[1], self.cwd), args[2])
+            except VfsError as exc: print(f"ошибка: {exc}")
+            return True
         if args[0] == "vfs-init": self.vfs.reset(); self.cwd = self.vfs.root; self.source = "<память>"; print("VFS инициализирована в памяти"); return True
         if args[0] == "vfs-info":
             digest = "недоступно" if self.source == "<память>" else hashlib.sha256(open(self.source,"rb").read()).hexdigest()
@@ -97,10 +128,13 @@ class Shell:
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Эмулятор UNIX-подобной оболочки")
     parser.add_argument("--vfs", required=True, help="XML-файл виртуальной файловой системы")
+    parser.add_argument("--script", help="TXT-сценарий стартовых команд")
     parser.add_argument("--no-interactive", action="store_true")
     args = parser.parse_args(argv)
     try: shell = Shell(VirtualFileSystem.from_xml(args.vfs), args.vfs)
     except VfsError as exc: print(f"ошибка: {exc}"); return 1
+    print(f"VFS загружена: {args.vfs}")
+    if args.script: shell.run_script(args.script)
     if not args.no_interactive:
         while True:
             try:

@@ -1,0 +1,8 @@
+# Error cases
+unknown
+cd missing
+cat missing.txt
+mv missing.txt x
+mv a b
+ls one two
+pwd extra
