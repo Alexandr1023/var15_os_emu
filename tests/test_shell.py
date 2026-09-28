@@ -74,6 +74,7 @@ def test_binary_decoder():
 
 
 def test_mv_directory_and_invalid_destination(shell, capsys):
+    shell.execute("cd /home/user")
     shell.execute("mv /home/user /tmp")
     shell.execute("pwd")
     assert capsys.readouterr().out == "/tmp/user\n"
