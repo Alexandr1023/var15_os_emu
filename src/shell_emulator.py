@@ -54,12 +54,40 @@ class VirtualFileSystem:
     def reset(self): self.root = Node("", True)
 
 class Shell:
-    def __init__(self, vfs, source): self.vfs, self.source, self.cwd = vfs, source, vfs.root
+    def __init__(self, vfs, source): self.vfs, self.source, self.cwd, self.history = vfs, source, vfs.root, []
+    def _path(self, node):
+        names = []
+        while node is not self.vfs.root: names.append(node.name); node = node.parent
+        return "/" + "/".join(reversed(names))
     def execute(self, line):
         try: args = shlex.split(line)
         except ValueError as exc: print(f"ошибка разбора: {exc}"); return True
         if not args or args[0].startswith("#"): return True
+        self.history.append(line.strip())
         if args[0] == "exit": return False
+        if args[0] == "pwd": print(self._path(self.cwd)); return True
+        if args[0] == "ls":
+            try: node = self.vfs.resolve(args[1], self.cwd) if len(args) == 2 else self.cwd
+            except VfsError as exc: print(f"ошибка: {exc}"); return True
+            print(node.name if not node.is_dir else "  ".join(sorted(node.children))); return True
+        if args[0] == "cd":
+            try: node = self.vfs.resolve(args[1], self.cwd) if len(args) == 2 else self.vfs.root
+            except VfsError as exc: print(f"ошибка: {exc}"); return True
+            if not node.is_dir: print("ошибка: это не каталог")
+            else: self.cwd = node
+            return True
+        if args[0] == "cat":
+            if len(args) != 2: print("ошибка: использование: cat <путь>"); return True
+            try: node = self.vfs.resolve(args[1], self.cwd)
+            except VfsError as exc: print(f"ошибка: {exc}"); return True
+            if node.is_dir: print("ошибка: это каталог")
+            else:
+                try: print(node.content.decode(), end="")
+                except UnicodeDecodeError: print("ошибка: файл содержит двоичные данные")
+            return True
+        if args[0] == "history":
+            for number, command in enumerate(self.history, 1): print(f"{number:4}  {command}")
+            return True
         if args[0] == "vfs-init": self.vfs.reset(); self.cwd = self.vfs.root; self.source = "<память>"; print("VFS инициализирована в памяти"); return True
         if args[0] == "vfs-info":
             digest = "недоступно" if self.source == "<память>" else hashlib.sha256(open(self.source,"rb").read()).hexdigest()
