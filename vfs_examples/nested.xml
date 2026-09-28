@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vfs name="nested">
+  <directory name="home">
+    <directory name="student">
+      <directory name="projects">
+        <directory name="shell">
+          <file name="main.txt">shell project\n</file>
+        </directory>
+      </directory>
+      <file name="profile.txt">student profile\n</file>
+    </directory>
+  </directory>
+  <directory name="var">
+    <directory name="log">
+      <file name="app.log">started\nready\n</file>
+    </directory>
+  </directory>
+</vfs>

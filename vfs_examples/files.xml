@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vfs name="files">
+  <directory name="docs">
+    <file name="readme.txt">This is a virtual file.\n</file>
+    <file name="notes.txt">Stage 4: ls, cd, pwd, cat, history.\n</file>
+  </directory>
+  <directory name="tmp">
+    <file name="data.txt">temporary data\n</file>
+  </directory>
+</vfs>

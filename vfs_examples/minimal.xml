@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vfs name="minimal">
+  <directory name="home">
+    <directory name="student">
+      <file name="hello.txt" encoding="base64">SGVsbG8gZnJvbSBWRlMhCg==</file>
+    </directory>
+  </directory>
+</vfs>
