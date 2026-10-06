@@ -2,6 +2,8 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 pytest-of-sansa/
+tmp/
+work/
 .venv/
 venv/
 .idea/
